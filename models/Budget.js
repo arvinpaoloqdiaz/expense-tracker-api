@@ -38,7 +38,7 @@ const budgetSchema = new mongoose.Schema(
 			type: Boolean,
 			default:false
 		},
-		budgetGroupId:[
+		budgetGroupIdArray:[
 			{
 				type: mongoose.Schema.Types.ObjectId,
 				ref: "BudgetGroup"

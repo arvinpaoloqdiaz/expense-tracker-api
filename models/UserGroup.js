@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const userGroupSchema = new mongoose.Schema(
 	{
-		userId: [
+		userIdArray: [
 		    {
 		      type: mongoose.Schema.Types.ObjectId,
 		      ref: "User" // References the User collection
