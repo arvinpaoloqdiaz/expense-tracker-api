@@ -26,6 +26,9 @@ router.put("/edit",verify,userController.editProfile);
 // Change Password
 router.put("/changepass",verify,userController.changePassword);
 
+// Fetch Groups User is a member of
+// router.get("/groups", verify,userController.getGroups);
+
 // /*[ADMIN ROUTES]*/
 // // Get all users
 // router.get("/users",verify, verifyAdmin, userController.getUsers)

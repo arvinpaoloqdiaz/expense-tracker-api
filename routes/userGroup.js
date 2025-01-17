@@ -9,6 +9,7 @@ const { verify, verifyAdmin } = auth;
 const router  = express.Router();
 
 // [SECTION] Routes
+
 // Create New Group
 router.post("/create", verify, userGroupController.createGroup);
 

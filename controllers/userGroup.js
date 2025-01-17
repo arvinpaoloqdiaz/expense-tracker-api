@@ -2,47 +2,76 @@ const User = require("../models/User");
 const UserGroup = require("../models/UserGroup");
 const bcrypt = require('bcrypt');
 const auth = require("../auth");
+const mongoose = require('mongoose');
 require("dotenv").config();
 // [SECTION] Create a new Group
-module.exports.createGroup = async (req,res) => {
-    try {
-       // Fetch owner details
-       const owner = await User.findById(req.user.id);
-       if(!owner){
-        return res.status(401).send({
-            message:"User not found",
-            response:false,
-            data:null
-        })
-       }
-       let newUserGroup = new UserGroup({
-        userIdArray:[req.user.id],
-        owner:req.user.id
-       })
-       await newUserGroup.save();
-       
-       return res.status(201).send({
-        message:"User Group created!",
-        response: true,
-        data: newUserGroup
-       })
 
+
+module.exports.createGroup = async (req, res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        // Validate owner existence
+        const owner = await User.findById(req.user.id).session(session);
+        if (!owner) {
+            return res.status(404).send({
+                message: "User not found",
+                response: false,
+                data: null
+            });
+        }
+
+        // Create new UserGroup
+        const newUserGroup = new UserGroup({
+            userIdArray: [req.user.id],
+            owner: req.user.id
+        });
+        await newUserGroup.save({ session });
+
+        // Update user's userGroupArray
+        await User.updateOne(
+            { _id: req.user.id },
+            { $push: { userGroupArray: newUserGroup._id } },
+            { session }
+        );
+
+        // Commit transaction
+        await session.commitTransaction();
+        session.endSession();
+
+        return res.status(201).send({
+            message: "User Group created!",
+            response: true,
+            data: newUserGroup
+        });
     } catch (error) {
-        // Handle errors
+        // Rollback transaction on error
+        await session.abortTransaction();
+        session.endSession();
+
         console.error(error);
         return res.status(500).send({
             message: "Internal Server Error",
-            response:false,
-            data:error
+            response: false,
+            data: error.message
         });
     }
 };
 
+
 // [SECTION] Add Member to Group
+
+
 module.exports.addMember = async (req, res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
     try {
-        // Fetch and validate group based on params
-        const group = await UserGroup.findById(req.params.groupId);
+        const { groupId, userId } = req.params;
+
+        // Fetch and validate group
+        const group = await UserGroup.findById(groupId).session(session);
         if (!group) {
             return res.status(404).send({
                 message: "Group does not exist!",
@@ -51,8 +80,8 @@ module.exports.addMember = async (req, res) => {
             });
         }
 
-        // Fetch and validate User to add based on params
-        const addUser = await User.findById(req.params.userId);
+        // Fetch and validate user
+        const addUser = await User.findById(userId).session(session);
         if (!addUser) {
             return res.status(404).send({
                 message: "User does not exist!",
@@ -62,7 +91,7 @@ module.exports.addMember = async (req, res) => {
         }
 
         // Check if user is already a member
-        if (group.userIdArray.includes(addUser._id)) {
+        if (group.userIdArray.includes(userId)) {
             return res.status(422).send({
                 message: "User is already a member.",
                 response: false,
@@ -70,21 +99,43 @@ module.exports.addMember = async (req, res) => {
             });
         }
 
-        // Add the user to the group and update
-        group.userIdArray.push(addUser._id);
-        group.lastUpdated = Date.now(); // Update the lastUpdated timestamp
-        const updatedGroup = await group.save();
+        // Add user to the group
+        await UserGroup.updateOne(
+            { _id: groupId },
+            { 
+                $addToSet: { userIdArray: userId }, // Prevent duplicate entries
+                $set: { lastUpdated: Date.now() } // Update the timestamp
+            },
+            { session }
+        );
+
+        // Add group to the user's userGroupArray
+        await User.updateOne(
+            { _id: userId },
+            { $addToSet: { userGroupArray: groupId } }, // Prevent duplicate entries
+            { session }
+        );
+
+        // Commit transaction
+        await session.commitTransaction();
+        session.endSession();
 
         return res.status(200).send({
             message: "User added successfully!",
             response: true,
-            data: updatedGroup
+            data: { groupId, userId }
         });
     } catch (error) {
+        // Rollback transaction on error
+        await session.abortTransaction();
+        session.endSession();
+
+        console.error(error);
         return res.status(500).send({
             message: "Internal Server Error",
             response: false,
-            data: error
+            data: error.message
         });
     }
 };
+
