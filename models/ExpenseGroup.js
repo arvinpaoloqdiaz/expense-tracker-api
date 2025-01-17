@@ -9,15 +9,27 @@ const expenseGroupSchema = new mongoose.Schema(
 		description: {
 			type: String
 		},
+		owner:{
+			type:mongoose.Schema.Types.ObjectId,
+			ref:"User"
+		},
 		userGroupId: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref:"UserGroup",
 			required:true
 		},
-		budgetGroupId: {
-			type: mongoose.Schema.Types.ObjectId,
-			ref:"BudgetGroup"
-		},
+		expenseIdArray:[
+			{
+				type:mongoose.Schema.Types.ObjectId,
+				ref:"Expense"
+			}
+		],
+		budgetIdArray:[
+			{
+				type: mongoose.Schema.Types.ObjectId,
+				ref:"Budget"
+			}
+		],
 		total_cost:{
 			type: mongoose.Schema.Types.Decimal128,
 			min: 0,

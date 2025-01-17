@@ -19,12 +19,6 @@ const userGroupSchema = new mongoose.Schema(
 				ref:"Expense"
 			}
 		],
-		budgetGroupId: [
-			{
-				type: mongoose.Schema.Types.ObjectId,
-				ref: "Budget"
-			}
-		],
 		createdAt: {
 			type:Date,
 			default: Date.now

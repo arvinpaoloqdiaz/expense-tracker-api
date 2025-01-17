@@ -12,7 +12,7 @@ const expenseSchema = new mongoose.Schema(
 		userId: {
 			type:mongoose.Schema.Types.ObjectId,
 			ref: User,
-			required: [true: "userId is required!"]
+			required: [true, "userId is required!"]
 		},
 		cost: {
 			type: mongoose.Schema.Types.Decimal128,
@@ -39,7 +39,7 @@ const expenseSchema = new mongoose.Schema(
 				type: mongoose.Schema.Types.ObjectId,
 				ref: "ExpenseGroup"
 			}
-		]
+		],
 		createdAt: {
 			type: Date,
 			default: Date.now

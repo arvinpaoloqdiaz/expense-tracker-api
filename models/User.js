@@ -38,6 +38,18 @@ const userSchema = new mongoose.Schema(
 				ref:"UserGroup"
 			}
 		],
+		budgetArray:[
+			{
+				type: mongoose.Schema.Types.ObjectId,
+				ref:"Budget"
+			}
+		],
+		expenseArray: [
+			{
+				type: mongoose.Schema.Types.ObjectId,
+				ref:"Expense"
+			}
+		],
 		createdAt: {
 			type: Date,
 			default: Date.now

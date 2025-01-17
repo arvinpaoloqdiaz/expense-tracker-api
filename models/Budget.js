@@ -16,8 +16,14 @@ const budgetSchema = new mongoose.Schema(
 		userId:{
 			type:mongoose.Schema.Types.ObjectId,
 			ref: User,
-			required: [true: "userId is required!"]
+			required: [true, "userId is required!"]
 		},
+		expenseGroupIdArray:[
+			{
+				type: mongoose.Schema.Types.ObjectId,
+				ref:"ExpenseGroup"
+			}
+		],
 		originalAmount: {
 			type: mongoose.Schema.Types.Decimal128,
 			required: [true, "originalAmount is required!"],
@@ -38,12 +44,6 @@ const budgetSchema = new mongoose.Schema(
 			type: Boolean,
 			default:false
 		},
-		budgetGroupIdArray:[
-			{
-				type: mongoose.Schema.Types.ObjectId,
-				ref: "BudgetGroup"
-			}
-		]
 		createdAt: {
 			type: Date,
 			default: Date.now
