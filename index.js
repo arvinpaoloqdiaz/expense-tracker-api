@@ -6,6 +6,7 @@ require('dotenv').config();
 
 // By default web browsers prevents a website from making requests to a different domain. CORS relaex this rule, allowing us or our website to communicate securely with other websites.
 const userRoutes = require('./routes/user');
+const userGroupRoutes = require('./routes/userGroup');
 
 // Environment Setup
 const app = express();
@@ -25,6 +26,7 @@ mongoose.connection.once('open', () => console.log('Now connected to MongoDB Atl
 
 // [SECTION] Backend Routes
 app.use("/user",userRoutes);
+app.use("/group",userGroupRoutes);
 
 if(require.main === module){
 	app.listen(process.env.PORT, () => {

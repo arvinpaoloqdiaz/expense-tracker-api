@@ -32,6 +32,12 @@ const userSchema = new mongoose.Schema(
 			type: Boolean,
 			default: false
 		},
+		userGroupArray:[
+			{
+				type:mongoose.Schema.Types.ObjectId,
+				ref:"UserGroup"
+			}
+		],
 		createdAt: {
 			type: Date,
 			default: Date.now

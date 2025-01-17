@@ -8,6 +8,11 @@ const userGroupSchema = new mongoose.Schema(
 		      ref: "User" // References the User collection
 		    }
 		],
+		owner: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref:"User",
+			required:true
+		},
 		expenseGroupId: [
 			{
 				type: mongoose.Schema.Types.ObjectId,

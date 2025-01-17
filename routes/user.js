@@ -23,6 +23,9 @@ router.get("/profile",verify,userController.getDetails);
 // Edit User details
 router.put("/edit",verify,userController.editProfile);
 
+// Change Password
+router.put("/changepass",verify,userController.changePassword);
+
 // /*[ADMIN ROUTES]*/
 // // Get all users
 // router.get("/users",verify, verifyAdmin, userController.getUsers)

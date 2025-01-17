@@ -45,11 +45,24 @@ module.exports.registerUser = async (req,res) => {
         // Create Initial Group containing Registered User
 
         let newUserGroup = new UserGroup({
-            userIdArray:[newUser._id]
+            userIdArray:[newUser._id],
+            owner: newUser._id
         });
 
         await newUserGroup.save();
 
+        // Save ObjectId of UserGroup to User
+        newUser = await User.findOneAndUpdate({email:req.body.email},{userGroupArray:[newUserGroup._id]},{
+            new: true, // Return the updated user document
+            runValidators: true, // Run schema validators
+        });
+        if(!newUser){
+            return res.status(422).send({
+                message:"User Group not added!",
+                response: false
+            });
+        }
+        await newUser.save();
         // User registration successful, send a success response to the client
         return res.status(201).send({
             message: "User Registered Successfully",
@@ -229,5 +242,58 @@ module.exports.editProfile = async (req,res) => {
     }
 }
 
+module.exports.changePassword = async(req,res) => {
+    try{
+        // Fetch User Data
+        let user = await User.findById(req.user.id);
+        if(!user){
+            return res.status(409).send({
+                message:"No such User!",
+                response:false,
+                data:null
+            })
+        }
+        // Check currentPassword if matching
+        const isPasswordCorrect = bcrypt.compareSync(
+            req.body.currentPassword,
+            user.password
+          );
+        if(!isPasswordCorrect){
+            return res.status(409).send({
+                message: "Current Password does not match",
+                response:false,
+                data:null
+            })
+        }
+        const isValid = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z])(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+        if(!(isValid.test(req.body.newPassword))){
+            return res.status(422).send({
+                message:"New password does not meet the required criteria",
+                response:false
+            })
+        }
+        user = await User.findByIdAndUpdate(req.user.id,{password:bcrypt.hashSync(req.body.newPassword, parseInt(process.env.SALT_ROUNDS))},{
+            new:true,
+            runValidators:true
+        });
+        if(!user){
+            return res.status(404).send({
+                message:"Password not updated!",
+                response: false,
+                data:null
+            })
+        }
+        return res.status(200).send({
+            message:"Password Updated Successfully!",
+            response:true,
+            data: null
+        })
+    } catch(err){
+        res.status(500).send({
+            message:"Internal Server Error",
+            response: false,
+            data:err
+        })
+    }
+}
 // SHOULD FIX DATES TO DISPLAY GMT+8
-// Reset Password
