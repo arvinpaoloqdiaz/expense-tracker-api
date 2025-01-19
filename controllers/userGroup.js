@@ -139,3 +139,20 @@ module.exports.addMember = async (req, res) => {
     }
 };
 
+// [SECTION] Remove Member from group
+/*
+1. Check if IDs are valid
+2. Check if User is owner of group
+3. Check id ID is self
+*/
+// module.exports.removeMember = async (req,res) => {
+//     try{
+
+//     } catch(error){
+//         return res.status(500).send({
+//             message:"Internal Server Error",
+//             response: false,
+//             data: error
+//         })
+//     }
+// }

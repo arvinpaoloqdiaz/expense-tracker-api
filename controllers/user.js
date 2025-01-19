@@ -184,7 +184,7 @@ module.exports.getDetails = async (req,res) => {
         });
     }
 };
-
+// [SECTION] Edit Profile
 module.exports.editProfile = async (req,res) => {
     try{
         // Check if username exists
@@ -241,7 +241,7 @@ module.exports.editProfile = async (req,res) => {
         });
     }
 }
-
+// [SECTION] Change Password
 module.exports.changePassword = async(req,res) => {
     try{
         // Fetch User Data
@@ -296,5 +296,29 @@ module.exports.changePassword = async(req,res) => {
         })
     }
 }
-
+// [SECTION] Get Groups of COMMON USER
+module.exports.getGroups = async(req,res) => {
+    try{
+        // Get User
+        const user = await User.findById(req.user.id);
+        if(!user){
+            return res.status(409).send({
+                message:"User not found!",
+                reponse:false,
+                data:null
+            })
+        }
+        return res.status(200).send({
+            message:`${user.firstName} ${user.lastName}'s Groups`,
+            reponse:true,
+            data:user.userGroupArray
+        })
+    } catch (error) {
+        res.status(500).send({
+            message:"Internal Server Error",
+            response:false,
+            data:error
+        })
+    }
+}
 // SHOULD FIX DATES TO DISPLAY GMT+8
