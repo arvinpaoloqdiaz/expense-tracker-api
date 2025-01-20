@@ -405,3 +405,92 @@ module.exports.deleteGroup = async (req,res) => {
         })
     }
 }
+
+//[SECTION] User Change ownership of group. Only owner can change ownership
+module.exports.changeOwner = async (req,res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try{
+        const {groupId, userId} = req.params;
+        // Get Group Data
+        const group = await UserGroup.findById(groupId).session(session);
+        if(!group){
+            await session.abortTransaction();
+
+            return res.status(403).send({
+                message:"Group not found!",
+                response: false,
+                data: null
+            })
+        }
+        // Validate if self is owner of group
+        if(!(group.owner == req.user.id)){
+            await session.abortTransaction();
+
+            return res.status(422).send({
+                message:"You are not the owner of this group",
+                response: false,
+                data: group
+            })
+        }
+        // Get Self Data
+         const self = await User.findById(req.user.id).session(session);
+         if(!self){
+            await session.abortTransaction();
+
+            return res.status(403).send({
+                message:"User not found!",
+                response: false,
+                data: null
+            })
+        }
+        // Validate if group is initial group of self
+        if(self.userGroupArray[0] == groupId){
+            await session.abortTransaction();
+
+            return res.status(400).send({
+                message:"Cannot modify initial group!",
+                response: false,
+                data: group
+            })
+        }
+        // Get User Data
+        const user = await User.findById(userId).session(session);
+        if(!user){
+            await session.abortTransaction();
+
+            return res.status(422).send({
+                message:"User not found!",
+                response: false,
+                data:null
+            })
+        }
+        // Validate if user is member of group
+        if(!group.userIdArray.includes(user._id)){
+            await session.abortTransaction();
+
+            return res.status(400).send({
+                message:"User is not a member of the group",
+                response: false,
+                data:group
+            })
+        }
+
+        const newOwner = await UserGroup.findByIdAndUpdate(groupId,{owner:user._id}, {new: true, runValidators: true}).session(session);
+        await session.commitTransaction();
+        return res.status(200).send({
+            message:"Owner successfully changed!",
+            response: true,
+            data: newOwner
+        })
+    } catch(error) {
+        await session.abortTransaction();
+        return res.status(500).send({
+            message:"Internal Server Error",
+            response: false,
+            data: error
+        })
+    } finally {
+        session.endSession();
+    }
+}

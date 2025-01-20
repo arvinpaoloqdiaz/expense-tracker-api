@@ -23,7 +23,7 @@ router.delete("/remove/:groupId/:userId",verify, userGroupController.removeMembe
 router.delete("/delete/:groupId",verify, userGroupController.deleteGroup);
 
 // Change Owner
-// router.put("/owner/:groupId/:userId", verify, userGroupController.changeOwner);
+router.put("/owner/:groupId/:userId", verify, userGroupController.changeOwner);
 
 // [SECTION] Export Route System
 module.exports = router;
