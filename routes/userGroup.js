@@ -17,7 +17,7 @@ router.post("/create", verify, userGroupController.createGroup);
 router.put("/add/:groupId/:userId",verify, userGroupController.addMember);
 
 // Remove Members to Group
-// router.delete("/remove/:groupId/:userId",verify, userGroupController.removeMember);
+router.delete("/remove/:groupId/:userId",verify, userGroupController.removeMember);
 // Delete Group
 // Change Owner
 
