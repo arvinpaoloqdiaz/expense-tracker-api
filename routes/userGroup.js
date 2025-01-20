@@ -18,8 +18,12 @@ router.put("/add/:groupId/:userId",verify, userGroupController.addMember);
 
 // Remove Members to Group
 router.delete("/remove/:groupId/:userId",verify, userGroupController.removeMember);
+
 // Delete Group
+router.delete("/delete/:groupId",verify, userGroupController.deleteGroup);
+
 // Change Owner
+// router.put("/owner/:groupId/:userId", verify, userGroupController.changeOwner);
 
 // [SECTION] Export Route System
 module.exports = router;

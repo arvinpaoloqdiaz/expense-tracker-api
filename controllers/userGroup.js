@@ -163,6 +163,10 @@ module.exports.removeMember = async (req, res) => {
 
         // Validate if self is a part of groupId
         if (!self.userGroupArray.includes(groupId)) {
+
+            await session.commitTransaction();
+            session.endSession();
+
             return res.status(400).send({
                 message: "You are not part of the group!",
                 response: false,
@@ -172,6 +176,9 @@ module.exports.removeMember = async (req, res) => {
 
         // Validate if group is not the first created
         if (groupId == self.userGroupArray[0]) {
+            await session.commitTransaction();
+            session.endSession();
+            
             return res.status(400).send({
                 message: "Cannot modify default group!",
                 response: false,
@@ -300,3 +307,101 @@ module.exports.removeMember = async (req, res) => {
         });
     }
 };
+
+// [SECTION] Delete Group (Only Owner), Cannot remove initial group created
+module.exports.deleteGroup = async (req,res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try{
+        const { groupId } = req.params;
+        // Get Group Data
+        const group = await UserGroup.findById(groupId).session(session);
+        
+        if(!group){
+
+            await session.abortTransaction();
+            session.endSession();
+
+            return res.status(404).send({
+                message:"Group not found!",
+                response:false,
+                data:null
+            })
+        }
+        // Get User Data
+        const user = await User.findById(req.user.id).session(session);
+        if(!user){
+
+            await session.abortTransaction();
+            session.endSession();
+
+            return res.status(404).send({
+                message:"User not found!",
+                response:false,
+                data:null
+            })
+        }
+        // Validate if User is owner of the group
+        if(!(group.owner == req.user.id)){
+
+            await session.commitTransaction();
+            session.endSession();
+
+            return res.status(400).send({
+                message:"You are not the owner of this group",
+                response:false,
+                data:group
+            })
+        }
+
+        // Validate if Group to be deleted is Initial Group of User
+        if(user.userGroupArray[0] == groupId){
+            await session.abortTransaction();
+            session.endSession();
+
+            return res.status(400).send({
+                message:"Cannot modify initial group!",
+                response: false,
+                data: group
+            })
+        }
+        // Remove Group ID from Members in the Group
+        for (const userId of group.userIdArray) {
+            await User.findByIdAndUpdate(
+            userId,
+            { $pull: { userGroupArray: groupId } },
+            { session }
+            );
+        }
+        // Delete Group in UserGroup table
+        const deletedGroup = await UserGroup.findByIdAndDelete(groupId);
+        if(!deletedGroup){
+            await session.abortTransaction();
+            session.endSession();
+
+            return res.status(422).send({
+                message:"Cannot delete Group!",
+                reponse:false,
+                data:null
+            })
+        }
+
+        await session.commitTransaction();
+        session.endSession();
+
+        return res.status(200).send({
+            message:"Group successfully deleted!",
+            response:true,
+            data:deletedGroup
+        })
+    } catch(error){
+        await session.abortTransaction();
+        session.endSession();
+
+        return res.status(500).send({
+            message:"Internal Server Error",
+            response: false,
+            data: error
+        })
+    }
+}
