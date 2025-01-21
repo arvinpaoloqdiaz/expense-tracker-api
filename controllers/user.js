@@ -2,6 +2,7 @@ const User = require("../models/User");
 const UserGroup = require("../models/UserGroup");
 const bcrypt = require('bcrypt');
 const auth = require("../auth");
+const mongoose = require('mongoose');
 require("dotenv").config();
 // [SECTION] Register a User. Create Initial Group
 module.exports.registerUser = async (req,res) => {
@@ -319,6 +320,32 @@ module.exports.getGroups = async(req,res) => {
             response:false,
             data:error
         })
+    }
+}
+
+// [SECTION] ADMIN ROUTES
+
+// [SECTION] Get all Users
+module.exports.getUsers = async(req,res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try{
+        const users = await User.find({}).select('-password');
+        session.commitTransaction();
+        return res.status(200).send({
+            message:"Users Retrieved",
+            response:true,
+            data: users
+        })
+    } catch (error) {
+        session.abortTransaction();
+        return res.status(500).send({
+            message:"Internal Server Error",
+            response: false,
+            data: error
+        }) 
+    } finally {
+        session.endSession();
     }
 }
 // SHOULD FIX DATES TO DISPLAY GMT+8
