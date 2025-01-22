@@ -355,7 +355,7 @@ module.exports.getAllGroups = async(req,res) => {
     const session = await mongoose.startSession();
     session.startTransaction();
     try{
-        const groups = await UserGroup.find({isInitial:false});
+        const groups = await UserGroup.find({isInitial:false}).session(session);
         session.commitTransaction();
         return res.status(200).send({
             message:"Groups Retrieved",
@@ -373,5 +373,54 @@ module.exports.getAllGroups = async(req,res) => {
         session.endSession();
     }
 }
+
+//[SECTION] Toggle User Type
+module.exports.changeUserType = async (req, res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+        // Validate if User is trying to change their own type
+        if (req.params.userId === req.user.id) {
+            await session.abortTransaction();
+            return res.status(400).send({
+                message: "You cannot change your own User Type",
+                response: false,
+                data: null,
+            });
+        }
+
+        // Find the user to toggle isAdmin
+        const user = await User.findById(req.params.userId).session(session);
+
+        if (!user) {
+            await session.abortTransaction();
+            return res.status(404).send({
+                message: "User not found",
+                response: false,
+                data: null,
+            });
+        }
+
+        // Toggle isAdmin field
+        user.isAdmin = !user.isAdmin;
+        await user.save({ session });
+
+        await session.commitTransaction();
+        return res.status(200).send({
+            message: "User Type Updated!",
+            response: true,
+            data: user,
+        });
+    } catch (error) {
+        await session.abortTransaction();
+        return res.status(500).send({
+            message: "Internal Server Error",
+            response: false,
+            data: error.message,
+        });
+    } finally {
+        session.endSession();
+    }
+};
 
 // SHOULD FIX DATES TO DISPLAY GMT+8

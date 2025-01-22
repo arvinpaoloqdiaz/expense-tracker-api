@@ -36,5 +36,11 @@ router.get("/users",verify, verifyAdmin, userController.getUsers);
 // Get all groups
 router.get("/all-groups",verify,verifyAdmin,userController.getAllGroups);
 
+// Change User Type
+router.put("/change/:userId",verify,verifyAdmin,userController.changeUserType);
+
+// Delete a User
+// router.delete("/delete/:userId",verify,verifyAdmin,userController.deleteUser);
+
 // [SECTION] Export Route System
 module.exports = router;

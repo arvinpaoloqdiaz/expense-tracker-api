@@ -15,7 +15,7 @@ const budgetSchema = new mongoose.Schema(
 		},
 		userId:{
 			type:mongoose.Schema.Types.ObjectId,
-			ref: User,
+			ref: "User",
 			required: [true, "userId is required!"]
 		},
 		expenseGroupIdArray:[
@@ -31,7 +31,7 @@ const budgetSchema = new mongoose.Schema(
 			get: (value) => parseFloat(value.toString())
 		},
 		currentAmount:{
-			type: mongoose.Schema.Type.Decimal128,
+			type: mongoose.Schema.Types.Decimal128,
 			required: [true, "currentAmount is required!"],
 			min: 0,
 			get: (value) => parseFloat(value.toString())
