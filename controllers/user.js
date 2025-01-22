@@ -47,7 +47,8 @@ module.exports.registerUser = async (req,res) => {
 
         let newUserGroup = new UserGroup({
             userIdArray:[newUser._id],
-            owner: newUser._id
+            owner: newUser._id,
+            isInitial: true
         });
 
         await newUserGroup.save();
@@ -348,4 +349,29 @@ module.exports.getUsers = async(req,res) => {
         session.endSession();
     }
 }
+
+// [SECTION] Get all Groups
+module.exports.getAllGroups = async(req,res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try{
+        const groups = await UserGroup.find({isInitial:false});
+        session.commitTransaction();
+        return res.status(200).send({
+            message:"Groups Retrieved",
+            response:true,
+            data: groups
+        })
+    } catch (error) {
+        session.abortTransaction();
+        return res.status(500).send({
+            message:"Internal Server Error",
+            response: false,
+            data: error
+        }) 
+    } finally {
+        session.endSession();
+    }
+}
+
 // SHOULD FIX DATES TO DISPLAY GMT+8

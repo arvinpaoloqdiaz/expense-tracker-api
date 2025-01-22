@@ -33,5 +33,8 @@ router.get("/groups", verify,userController.getGroups);
 // Get all users
 router.get("/users",verify, verifyAdmin, userController.getUsers);
 
+// Get all groups
+router.get("/all-groups",verify,verifyAdmin,userController.getAllGroups);
+
 // [SECTION] Export Route System
 module.exports = router;

@@ -19,6 +19,10 @@ const userGroupSchema = new mongoose.Schema(
 				ref:"Expense"
 			}
 		],
+		isInitial: {
+			type: Boolean,
+			default: false
+		},
 		createdAt: {
 			type:Date,
 			default: Date.now

@@ -175,8 +175,8 @@ module.exports.removeMember = async (req, res) => {
         }
 
         // Validate if group is not the first created
-        if (groupId == self.userGroupArray[0]) {
-            await session.commitTransaction();
+        if (groupId.isInitial) {
+            await session.abortTransaction();
             session.endSession();
             
             return res.status(400).send({
