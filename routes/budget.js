@@ -12,5 +12,8 @@ const router  = express.Router();
 // Create Budget Object
 router.post("/create",verify,budgetController.createBudget);
 
+// Get Budget 
+router.get("/get", verify, budgetController.getBudget);
+
 // [SECTION] Export Route System
 module.exports = router;

@@ -60,3 +60,37 @@ module.exports.createBudget = async (req, res) => {
         session.endSession();
     }
 };
+
+//[SECTION] Get Budget
+module.exports.getBudget = async (req,res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+        // Get Budget
+        const budgetArray = await Budget.find({userId:req.user.id}).session(session);
+        if(budgetArray.length === 0) {
+           await session.commitTransaction();
+            return res.status(404).send({
+                message:"No Budget for User!",
+                response:false,
+                data:null 
+            });
+        };
+        await session.commitTransaction();
+        return res.status(200).send({
+            message:"Budget Retrieved",
+            response:true,
+            data:budgetArray
+        })
+
+    } catch(error) {
+        await session.abortTransaction();
+        return res.status(500).send({
+            message:"Internal Server Error",
+            response:false,
+            data:error
+        })
+    } finally {
+        await session.endSession();
+    }
+}
