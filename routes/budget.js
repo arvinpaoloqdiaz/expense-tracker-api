@@ -15,5 +15,8 @@ router.post("/create",verify,budgetController.createBudget);
 // Get Budget 
 router.get("/get", verify, budgetController.getBudget);
 
+// Edit Budget Details (Excluding Amount)
+router.put("/edit/:budgetId",verify,budgetController.editBudget);
+
 // [SECTION] Export Route System
 module.exports = router;

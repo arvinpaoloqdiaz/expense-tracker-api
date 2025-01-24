@@ -94,3 +94,66 @@ module.exports.getBudget = async (req,res) => {
         await session.endSession();
     }
 }
+
+//[SECTION] Edit Budget Details
+module.exports.editBudget = async (req, res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+        const { budgetId } = req.params;
+        const { title, description, source, priority } = req.body;
+
+        // Find the budget using the transaction session
+        const budget = await Budget.findById(budgetId).session(session);
+
+        // Check if the budget exists
+        if (!budget) {
+            await session.abortTransaction();
+            return res.status(404).send({
+                message: "No Budget found!",
+                response: false,
+                data: null
+            });
+        }
+
+        // Check if the budget belongs to the logged-in user
+        if (req.user.id !== budget.userId.toString()) {
+            await session.abortTransaction();
+            return res.status(403).send({
+                message: "You are not authorized to edit this budget!",
+                response: false,
+                data: null
+            });
+        }
+
+        // Update the budget fields
+        budget.title = title || budget.title;
+        budget.description = description || budget.description;
+        budget.source = source || budget.source;
+        budget.priority = priority || budget.priority;
+        budget.updatedAt = Date.now();
+
+        // Save the updated budget within the transaction
+        await budget.save({ session });
+
+        // Commit the transaction
+        await session.commitTransaction();
+
+        return res.status(200).send({
+            message: "Budget updated successfully!",
+            response: true,
+            data: budget
+        });
+    } catch (error) {
+        // Abort transaction in case of an error
+        await session.abortTransaction();
+        console.error("Error updating budget:", error); // Log the error for debugging
+        return res.status(500).send({
+            message: "Internal Server Error",
+            response: false,
+            data: null
+        });
+    } finally {
+        await session.endSession();
+    }
+};
