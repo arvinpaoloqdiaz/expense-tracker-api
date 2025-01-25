@@ -157,3 +157,66 @@ module.exports.editBudget = async (req, res) => {
         await session.endSession();
     }
 };
+
+// [SECTION] Deletes a budget
+module.exports.deleteBudget = async (req, res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+        const { budgetId } = req.params;
+
+        // Find the budget using the transaction session
+        const budget = await Budget.findById(budgetId).session(session);
+
+        // Check if the budget exists
+        if (!budget) {
+            await session.abortTransaction();
+            return res.status(404).send({
+                message: "No Budget found!",
+                response: false,
+                data: null,
+            });
+        }
+
+        // Check if the budget belongs to the logged-in user
+        if (req.user.id !== budget.userId.toString()) {
+            await session.abortTransaction();
+            return res.status(403).send({
+                message: "You are not authorized to delete this budget!",
+                response: false,
+                data: null,
+            });
+        }
+
+        // Delete the budget
+        await Budget.findByIdAndDelete(budgetId, { session });
+
+        // Find the user and update their budgetId array
+        await User.findByIdAndUpdate(
+            req.user.id,
+            { $pull: { budgetArray: budgetId } }, // Remove the budgetId from the array
+            { session }
+        );
+
+        // Commit the transaction
+        await session.commitTransaction();
+
+        return res.status(200).send({
+            message: "Budget deleted successfully!",
+            response: true,
+            data: null,
+        });
+    } catch (error) {
+        // Abort the transaction on error
+        await session.abortTransaction();
+        return res.status(500).send({
+            message: "Internal Server Error",
+            response: false,
+            data: error,
+        });
+    } finally {
+        // End the session
+        await session.endSession();
+    }
+};
+

@@ -18,5 +18,8 @@ router.get("/get", verify, budgetController.getBudget);
 // Edit Budget Details (Excluding Amount)
 router.put("/edit/:budgetId",verify,budgetController.editBudget);
 
+// Delete Budget Object
+router.delete("/delete/:budgetId", verify, budgetController.deleteBudget);
+
 // [SECTION] Export Route System
 module.exports = router;
