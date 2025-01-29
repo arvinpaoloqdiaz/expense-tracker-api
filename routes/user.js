@@ -39,6 +39,9 @@ router.get("/all-groups",verify,verifyAdmin,userController.getAllGroups);
 // Change User Type
 router.put("/change/:userId",verify,verifyAdmin,userController.changeUserType);
 
+// Get all Budget
+router.get("/all-budget",verify,verifyAdmin,userController.getAllBudget);
+
 // Delete a User
 // router.delete("/delete/:userId",verify,verifyAdmin,userController.deleteUser);
 

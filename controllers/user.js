@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const UserGroup = require("../models/UserGroup");
+const Budget = require("../models/Budget");
 const bcrypt = require('bcrypt');
 const auth = require("../auth");
 const mongoose = require('mongoose');
@@ -423,4 +424,27 @@ module.exports.changeUserType = async (req, res) => {
     }
 };
 
+// [SECTION] Get all Budget
+module.exports.getAllBudget = async(req,res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try{
+        const budget = await Budget.find({}).session(session);
+        await session.commitTransaction();
+        return res.status(200).send({
+            message:"Budget Retrieved",
+            response:true,
+            data: budget
+        })
+    } catch (error) {
+        session.abortTransaction();
+        return res.status(500).send({
+            message:"Internal Server Error",
+            response: false,
+            data: error
+        }) 
+    } finally {
+        session.endSession();
+    }
+}
 // SHOULD FIX DATES TO DISPLAY GMT+8
