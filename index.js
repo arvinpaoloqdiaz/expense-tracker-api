@@ -8,6 +8,8 @@ require('dotenv').config();
 const userRoutes = require('./routes/user');
 const userGroupRoutes = require('./routes/userGroup');
 const budgetRoutes = require('./routes/budget');
+const expenseRoutes = require('./routes/expense');
+
 // Environment Setup
 const app = express();
 
@@ -28,6 +30,7 @@ mongoose.connection.once('open', () => console.log('Now connected to MongoDB Atl
 app.use("/user",userRoutes);
 app.use("/group",userGroupRoutes);
 app.use("/budget",budgetRoutes);
+app.use("/expense",expenseRoutes);
 
 if(require.main === module){
 	app.listen(process.env.PORT, () => {
